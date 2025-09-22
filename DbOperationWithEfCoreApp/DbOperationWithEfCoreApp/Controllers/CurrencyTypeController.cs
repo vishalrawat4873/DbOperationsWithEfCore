@@ -43,7 +43,7 @@ namespace DbOperationWithEfCoreApp.Controllers
         }
 
         //[HttpPost("all")]
-        //public async Task <IActionResult> GetCurrenyTypeByIdAsync([FromBody] List<int>ids)
+        //public async Task<IActionResult> GetCurrenyTypeByIdAsync([FromBody] List<int> ids)
         //{
         //    //var ids = new List<int> { 1,3,2,4 };
         //    var result = await _appDbContext.CurrencyType.Where(x => ids.Contains(x.Id)).ToListAsync();
