@@ -16,6 +16,18 @@ namespace DbOperationWithEfCoreApp.Controllers
             _appDbContext = appDbContext;
         }
 
+        [HttpGet("")]
+        public async  Task<IActionResult> GetAllBookasync()
+        {
+            var book = await _appDbContext.Books.Select(x => new Book
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Author = x.Author,
+            }
+            ).AsNoTracking().ToListAsync();
+            return Ok(book);
+        }
         [HttpPost]
         public async Task<IActionResult> AddBook([FromBody] Book Model)
         {
@@ -35,15 +47,15 @@ namespace DbOperationWithEfCoreApp.Controllers
         }
 
         [HttpPost("bulk")]
-        public async Task<IActionResult> AddBooks([FromBody] List<Book> Model)
+        public async Task<IActionResult> AddBooks([FromBody] List<Book> book)
         {
-            if (Model == null)
+            if (book == null)
                 return BadRequest("Book data is null");
 
-            _appDbContext.Books.AddRange(Model);
+            _appDbContext.Books.AddRange(book);
             await _appDbContext.SaveChangesAsync();
 
-            return Ok(Model);
+            return Ok(book);
         }
 
         [HttpPut("{id}")]
@@ -68,13 +80,56 @@ namespace DbOperationWithEfCoreApp.Controllers
             return Ok(book);
         }
 
-        [HttpPut("")]
-        public async Task<IActionResult> UpdateBooksBySingleQuery([FromBody] Book model)
+        [HttpPut("bul-update")]
+        public async Task<IActionResult> UpdateBooksInBulk()
         {
-            _appDbContext.Books.Update(model);
-            await _appDbContext.SaveChangesAsync();
-            return Ok(model);    
+            await _appDbContext.Books.Where(x=>x.Id==5).ExecuteUpdateAsync(x => x
+            .SetProperty(p =>p.Description, p=> "4th description")
+            .SetProperty(p => p.Title,p=>p.Title +  "4rth new updated title")
+            .SetProperty(p => p.NoOfPages, p=>23));
+            return Ok();
         }
+
+        //[HttpDelete("{id:int}")]
+        //public async Task<IActionResult> DeletebyIdAsync([FromRoute] int id)
+        //{
+        //    var book= await _appDbContext.Books.FindAsync(id);
+        //    if(book==null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    _appDbContext.Books.Remove(book);
+        //    await _appDbContext.SaveChangesAsync();
+        //    return Ok();
+        //}
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeletebyIdAsync([FromRoute] int id)
+        {
+            var book = new Book { Id = id };
+            _appDbContext.Entry(book).State = EntityState.Deleted;
+            await _appDbContext.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpDelete("bulk")]
+
+        public async Task<IActionResult> DeleteBulkAsync()
+        {
+            var books =await _appDbContext.Books.Where(x => x.Id < 20).ExecuteDeleteAsync();
+            return Ok();
+        }
+
+        //[HttpDelete("bulk-delete")]
+        //public async Task<IActionResult> DeleteBooksInBulk()
+        //{
+        //    // Example: delete all books with NoOfPages less than 100
+        //    var rowsAffected = await _appDbContext.Books
+        //        .Where(b => b.NoOfPages < 100)
+        //        .ExecuteDeleteAsync();
+
+        //    return Ok(new { DeletedRows = rowsAffected });
+        //}   
+
 
     }
 }

@@ -19,9 +19,10 @@ namespace DbOperationWithEfCoreApp.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCurrencyTypeAsync()
         {
-            var result =await (from CurrencyType 
-                               in _appDbContext.CurrencyType
-                               select CurrencyType).ToListAsync();
+            var result =await _appDbContext.CurrencyType.AsNoTracking().ToListAsync();
+            //var result =await (from CurrencyType 
+            //                   in _appDbContext.CurrencyType
+            //                   select CurrencyType).AsNoTracking().ToListAsync();
             return Ok(result);
         }
 
